@@ -2,181 +2,279 @@
  * counter app
  */
 
-var counter = (function(window) {
-  'use strict';
+const CounterList = props => {
+    const visibilityStyle = {
+        display: props.counterData.length ? 'none' : 'block',
+    };
 
-  /***** private variables *****/
-  var title = document.querySelector( '#title' );
-  var addCounter = document.querySelector( '#addCounter' );
-  var counterList = document.querySelector( '#counterList' );
-  var emptyList = counterList.querySelector('.empty');
-  var totalCount = document.querySelector( '#totalCount' );
-  var listItem = '<h5 class="m-0"></h5><div class="btn-group"><button type="button" class="btn btn-increment btn-outline-secondary"><i class="fas fa-plus"></i></button><button type="button" class="btn itemCount btn-outline-secondary" disabled>0</button><button type="button" class="btn btn-decrement btn-outline-secondary"><i class="fas fa-minus"></i></button><button type="button" class="btn btn-delete btn-outline-danger"><i class="fas fa-trash"></i></button></div';
+    const listItems = props.counterData.map((listItem, index) => {
+        return (
+            <li key={index} data-id={listItem.id} className="list-group-item justify-content-between align-items-center d-flex">
+                <h5 className="m-0">{listItem.title}</h5>
+                <div className="btn-group">
+                    <button onClick={() => props.incrementCounter(index, listItem.id)} className="btn btn-increment btn-outline-secondary">
+                        <i className="fas fa-plus"></i>
+                    </button>
+                    <button className="btn itemCount btn-outline-secondary" disabled>
+                        {listItem.count}
+                    </button>
+                    <button onClick={() => props.decrementCounter(index, listItem.id)} className="btn btn-decrement btn-outline-secondary">
+                        <i className="fas fa-minus"></i>
+                    </button>
+                    <button onClick={() => props.deleteCounter(listItem.id)} className="btn btn-delete btn-outline-danger">
+                        <i className="fas fa-trash"></i>
+                    </button>
+                </div>
+            </li>
+        );
+    });
 
-  /***** private methods *****/
-  function addToList() { // create a list item
-      if ( title.value === '' ) {
-          title.classList.add( 'is-invalid' );
-          return false;
-      }
+    return (
+        <div className="row my-4">
+            <div className="card col-12 p-0">
+                <div className="card-header text-center text-white bg-dark">
+                    Counters
+                </div>
+                <div className="card-body p-0">
+                    <ul className="list-group list-group-flush col-sm-12 p-0">
+                        <li className="empty list-group-item text-center" style={visibilityStyle}>No Counter</li>
+                        {listItems}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    );
+}
 
-      atomic('/api/v1/counter', {
-          method: 'POST',
-          data : {
-            title: title.value
-          }
-      })
-      .then(function (response) {
-          // console.log(response.data); // xhr.responseText
-          var data = response.data[ response.data.length - 1 ]
-          var li = dom( 'li', { 'class': 'list-group-item justify-content-between align-items-center fade d-flex show', 'data-id': data.id} );
-          li.innerHTML = listItem;
-          li.querySelector('h5').textContent = data.title;
-          counterList.appendChild( li );
+const CounterTotal = props => {
+    return (
+        <div className="row my-2">
+            <div className="card col-12 p-0">
+                <div className="card-header text-center text-white bg-dark">
+                    Total
+                </div>
+                <div className="card-body text-center">
+                    <h2 className="card-text">{props.totalCount}</h2>
+                </div>
+            </div>
+        </div>
+    );
+}
 
-          title.value = ''; // reset the input field
-          updateCount();
-      })
-      .catch(function (error) {
-          console.log(error.status);
-      });
-  };
+class CounterForm extends React.Component {
+    constructor(props) {
+        super(props);
+        this.resetState = {
+            title: '',
+            isValid: true,
+        };
+        this.state = this.resetState;
+    }
 
-  function removeFromList( elem ) { // remove a list item
-      atomic('/api/v1/counter', {
-          method: 'DELETE',
-          data : {
-              id : elem.getAttribute( 'data-id' )
-          }
-      })
-      .then(function (response) {
-          // console.log(response.data); // xhr.responseText
-          counterList.removeChild( elem );
-          updateCount();
-      })
-      .catch(function (error) {
-          console.log(error.status); // xhr.status
-      });
-  };
+    setForm = event => {
+        const {value} = event.target;
 
-  function updateCounter( elem, action ) { // increment/decrement a counter /api/v1/counter/
-      atomic('/api/v1/counter/' + action, {
-          method: 'POST',
-          data : {
-              id : elem.getAttribute( 'data-id' )
-          }
-      })
-      .then(function (response) {
-          // console.log(response.data); // xhr.responseText
-          var counter = elem.querySelector( '.itemCount' );
-          if ( action === 'inc' ) {
-              counter.textContent = parseInt(counter.textContent) + 1;
-          } else if ( action === 'dec' ) {
-              counter.textContent = parseInt(counter.textContent) - 1;
-          }
-          updateCount();
-      })
-      .catch(function (error) {
-          console.log(error.status); // xhr.status
-      });
-  };
+        this.setState({
+            title: value,
+            isValid: true,
+        });
+    }
 
-  function updateCount() {
-      var count = 0;
-      atomic('/api/v1/counters')
-      .then(function (response) {
-          // console.log(response.data); // xhr.responseText
-          var count = 0;
-          if ( response.data.length ) {
-              emptyList.setAttribute( 'style', 'display:none' );
-              response.data.forEach( function( item ) {
-                  count += item.count;
-              });
-              totalCount.textContent = count;
-          } else {
-              totalCount.textContent = 0;
-              emptyList.setAttribute( 'style', '' );
-          }
-      })
-      .catch(function (error) {
-          console.log(error.status); // xhr.status
-          console.log(error.statusText); // xhr.statusText
-      });
-  };
+    submitForm = () => {
+        const { title } = this.state;
 
-  function renderCounters() {
-      atomic('/api/v1/counters')
-      .then(function (response) {
-          // console.log(response.data); // xhr.responseText
-          if ( response.data.length ) {
-              response.data.forEach( function( item ) {
-                  var li = dom( 'li', { 'class': 'list-group-item justify-content-between align-items-center fade d-flex show', 'data-id': item.id} );
-                  li.innerHTML = listItem;
-                  li.querySelector('h5').textContent = item.title;
-                  li.querySelector('.itemCount').textContent = item.count;
-                  counterList.appendChild( li );
-              });
-          }
-          updateCount();
-      })
-      .catch(function (error) {
-          console.log(error.status); // xhr.status
-      });
-  };
+        if ( title === '' ) {
+            this.setState({
+               isValid: false,
+            });
+        } else {
+            this.props.addCounter(this.state.title);
+            this.setState(this.resetState);
+        }
+    }
 
-  /***** helper methods *****/
-  function dom(name, attrs) {
-      var el = document.createElement(name.toString());
+    render() {
+        const { title } = this.state;
 
-      !!attrs && Object.keys(attrs).forEach(function(key) {
-        el.setAttribute(key, attrs[key]);
-      });
+        const buttonStyle = {
+            maxHeight: '38px',
+        };
+        let inputClass = this.state.isValid ? 'form-control' : 'form-control is-invalid';
 
-      return el;
-  };
+        return (
+            <div className="row my-1 justify-content-between">
+                <div className="col-12 p-0">
+                    <small className="form-text text-muted">Add a counter.</small>
+                </div>
+                <div className="col-10 p-0">
+                    <input value={title} onChange={this.setForm} className={inputClass} placeholder="Title" type="text" />
+                    <div className="invalid-feedback">
+                        Provide a title!
+                    </div>
+                </div>
+                <button onClick={this.submitForm} className="btn btn-outline-dark col-2" style={buttonStyle}>
+                    <i className="fas fa-plus"></i>
+                </button>
+            </div>
+        );
+    }
+}
 
-  /***** public method *****/
-  // main init method
-  function init() {
-      renderCounters();
+class CounterApp extends React.Component {
+    constructor(props) {
+       super(props);
+       this.state = {
+           counters: [],
+       };
+    }
 
-      addCounter.addEventListener('click', addToList, false);
-      title.addEventListener('change', function() { title.classList.remove( 'is-invalid' ); }, false);
+    // add counter
+    addCounter = (title) => {
+        const { counters } = this.state;
+        const _this = this;
 
-      document.addEventListener('click', function ( e ) {
-          // .btn-delete clicked
-          if ( e.target.classList.contains( 'btn-delete' ) || e.target.parentNode.classList.contains( 'btn-delete' ) ) {
-              if ( e.target.classList.contains( 'fas' ) ) {
-                  removeFromList( e.target.parentNode.parentNode.parentNode );
-              } else {
-                  removeFromList( e.target.parentNode.parentNode );
-              }
-          }
-          // .btn-increment clicked
-          else if ( e.target.classList.contains( 'btn-increment' ) || e.target.parentNode.classList.contains( 'btn-increment' ) ) {
-              if ( e.target.classList.contains( 'fas' ) ) {
-                  updateCounter( e.target.parentNode.parentNode.parentNode, 'inc' );
-              } else {
-                  updateCounter( e.target.parentNode.parentNode, 'inc' );
-              }
-          }
-          // .btn-decrement clicked
-          else if ( e.target.classList.contains( 'btn-decrement' ) || e.target.parentNode.classList.contains( 'btn-decrement' ) ) {
-              if ( e.target.classList.contains( 'fas' ) ) {
-                  updateCounter( e.target.parentNode.parentNode.parentNode, 'dec' );
-              } else {
-                  updateCounter( e.target.parentNode.parentNode, 'dec' );
-              }
-          }
-      }, false);
-  }
+        atomic('/api/v1/counter', {
+            method: 'POST',
+            data : {
+              title: title
+            }
+        })
+            .then(function (response) {
+                // console.log(response.data); // xhr.responseText
+                _this.setState({
+                    counters: response.data,
+                });
+            })
+            .catch(function (error) {
+                console.log(error.status);
+            });
+    };
 
-  /***** export public methods *****/
-  return {
-    init: init
-  };
-}(window));
+    // increment handler
+    incrementCounter = (index, id) => {
+        const { counters } = this.state;
+        const _this = this;
 
-window.addEventListener('load', function () {
-	counter.init();
-}, false);
+        atomic('/api/v1/counter/inc', {
+            method: 'POST',
+            data : {
+              id: id
+            }
+        })
+            .then(function (response) {
+                // console.log(response.data); // xhr.responseText
+                _this.setState({
+                    counters: response.data,
+                });
+            })
+            .catch(function (error) {
+                console.log(error.status);
+            });
+    };
+
+    // decrement handler
+    decrementCounter = (index, id) => {
+        const { counters } = this.state;
+        const _this = this;
+
+        atomic('/api/v1/counter/dec', {
+            method: 'POST',
+            data : {
+              id: id
+            }
+        })
+            .then(function (response) {
+                // console.log(response.data); // xhr.responseText
+                _this.setState({
+                    counters: response.data,
+                });
+            })
+            .catch(function (error) {
+                console.log(error.status);
+            });
+    };
+
+    // delete handler
+    deleteCounter = (id) => {
+        const { counters } = this.state;
+        const _this = this;
+
+        atomic('/api/v1/counter', {
+            method: 'DELETE',
+            data : {
+              id: id
+            }
+        })
+            .then(function (response) {
+                // console.log(response.data); // xhr.responseText
+                _this.setState({
+                    counters: response.data,
+                });
+            })
+            .catch(function (error) {
+                console.log(error.status);
+            });
+    };
+
+    // Get Total Count
+    totalCount = () => {
+        const { counters } = this.state;
+        let count = 0;
+
+        const rows = counters.map((counter, index) => {
+            count += counter.count;
+        });
+
+        return count;
+    };
+
+    componentDidMount() {
+        const _this = this;
+
+        atomic('/api/v1/counters')
+            .then(function (response) {
+                // console.log(response.data); // xhr.responseText
+                _this.setState({
+                    counters: response.data,
+                });
+            })
+            .catch(function (error) {
+                console.log(error.status); // xhr.status
+            });
+    }
+
+    render() {
+        const containerStyle = {
+            maxWidth: '500px',
+        };
+
+        const { counters } = this.state;
+
+        return (
+            <div className="container" style={containerStyle}>
+                {/* add counter */}
+                <CounterForm
+                    addCounter={this.addCounter}
+                />
+
+                {/* counter list */}
+                <CounterList
+                    counterData={counters}
+                    incrementCounter={this.incrementCounter}
+                    decrementCounter={this.decrementCounter}
+                    deleteCounter={this.deleteCounter}
+                />
+
+                {/* counter total */}
+                <CounterTotal
+                    totalCount={this.totalCount()}
+                />
+            </div>
+        );
+    }
+}
+
+ReactDOM.render(
+  <CounterApp />,
+  document.getElementById('counterApp')
+);
