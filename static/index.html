@@ -7,56 +7,21 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     <link rel="stylesheet" href="app.css" type="text/css">
+
+    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/react@16/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js" crossorigin></script>
+
+    <script src="https://cdn.jsdelivr.net/gh/cferdinandi/atomic/dist/atomic.polyfills.min.js"></script>
   </head>
   <body>
     <main class="px-3 px-md-5">
-        <div class="container" style="max-width: 500px;">
-            <div class="py-5 text-center">
-                <h1>Counter App</h1>
-            </div>
-
-            <div class="row my-1 justify-content-between">
-                <div class="col-12 p-0">
-                    <small class="form-text text-muted">Add a counter.</small>
-                </div>
-                <div class="col-10 p-0">
-                    <input type="text" id="title" class="form-control" placeholder="Title">
-                    <div class="invalid-feedback">
-                        Provide a title!
-                    </div>
-                </div>
-                <button type="button" id="addCounter" class="btn btn-outline-dark col-2" style="max-height: 38px;">
-                    <i class="fas fa-plus"></i>
-                </button>
-            </div>
-
-            <div class="row my-4">
-                <div class="card col-12 p-0">
-                    <div class="card-header text-center text-white bg-dark">
-                      Counters
-                    </div>
-                    <div class="card-body p-0">
-                        <ul id="counterList" class="list-group list-group-flush col-sm-12 p-0">
-                            <li class="empty list-group-item text-center" style="display: none;">No Counter</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row my-2">
-                <div class="card col-12 p-0">
-                    <div class="card-header text-center text-white bg-dark">
-                      Total
-                    </div>
-                    <div class="card-body text-center">
-                        <h2 id="totalCount" class="card-text">0</h2>
-                    </div>
-                </div>
-            </div>
-        </div>
+      <div class="py-5 text-center">
+          <h1>Counter App</h1>
+      </div>
+      <div id="counterApp"></div>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/gh/cferdinandi/atomic/dist/atomic.polyfills.min.js"></script>
-    <script src="/app.js"></script>
+    <script type="text/babel" src="/app.js"></script>
   </body>
 </html>
