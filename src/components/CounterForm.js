@@ -11,12 +11,20 @@ class CounterForm extends React.Component {
     }
 
     setForm = event => {
-        const {value} = event.target;
+        event.preventDefault();
+        const { value } = event.target;
 
         this.setState({
             title: value,
             isValid: true,
         });
+    }
+
+    pressEnter = event => {
+        event.preventDefault();
+        if ( event.keyCode === 13 ) {
+            this.submitForm();
+        };
     }
 
     submitForm = () => {
@@ -47,7 +55,7 @@ class CounterForm extends React.Component {
                     <small className="form-text text-muted">Add a counter.</small>
                 </div>
                 <div className="col-10 p-0">
-                    <input value={title} onChange={this.setForm} className={inputClass} placeholder="Title" type="text" />
+                    <input value={title} onChange={this.setForm} onKeyUp={this.pressEnter} className={inputClass} placeholder="Title" type="text" />
                     <div className="invalid-feedback">
                         Provide a title!
                     </div>
