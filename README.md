@@ -1,7 +1,5 @@
 # SITEPOINT FRONTEND TEST
 
-```
-
 ## Install and start the server
 
 ```
