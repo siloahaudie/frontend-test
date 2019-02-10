@@ -1,4 +1,5 @@
 import React from 'react';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 class CounterList extends React.Component {
     constructor(props) {
@@ -20,18 +21,20 @@ class CounterList extends React.Component {
                 <li key={index} className="list-group-item justify-content-between align-items-center d-flex">
                     <h5 className="m-0">{listItem.title}</h5>
                     <div className="btn-group">
-                        <button onClick={() => this.props.incrementCounter(listItem.id)} className="btn btn-increment btn-outline-secondary">
+                        <button onClick={() => this.props.incrementCounter(listItem.id)} className="btn btn-increment btn-outline-dark">
                             <i className="fas fa-plus"></i>
                         </button>
                         <button className="btn itemCount btn-outline-secondary" style={style.buttonMinWidth} disabled>
                             {listItem.count}
                         </button>
-                        <button onClick={() => this.props.decrementCounter(listItem.id)} className="btn btn-decrement btn-outline-secondary">
+                        <button onClick={() => this.props.decrementCounter(listItem.id)} className="btn btn-decrement btn-outline-dark">
                             <i className="fas fa-minus"></i>
                         </button>
-                        <button onClick={() => this.props.deleteCounter(listItem.id)} className="btn btn-delete btn-outline-danger">
-                            <i className="fas fa-trash"></i>
-                        </button>
+                        <OverlayTrigger placement="top" overlay={ <Tooltip>Delete {listItem.title} <i className="fas fa-question"></i></Tooltip> }>
+                            <button onClick={() => this.props.deleteCounter(listItem.id)} className="btn btn-delete btn-outline-danger">
+                                <i className="fas fa-trash"></i>
+                            </button>
+                        </OverlayTrigger>
                     </div>
                 </li>
             );
